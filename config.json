@@ -1,0 +1,27 @@
+{
+"baseurl" : "http://127.0.0.1:3000/",
+"services" : [
+    {"name_service" : "servizio1",
+     "map" : "mappa.xml",
+     "title" : "worldmap",
+     "abstract" : "",
+     "SRS" : "EPSG:3005",
+     "boundingbox" : [100000, 100000, 1800000, 1800000],
+     "origin" : [0, 0],
+     "tile_set" : [2048, 1024],
+     "TileFormat" : [256, 256, "image/jpeg", "jpg"]
+    
+    },
+    {"name_service" : "servizio2",
+     "map" : "mappa.xml",
+     "title" : "countries",
+     "abstract" : "",
+     "SRS" : "EPSG:3005",
+     "boundingbox" : [100000, 100000, 1800000, 1800000],
+     "origin" : [0, 0],
+     "tile_set" : [2048, 1024],
+     "TileFormat" : [256, 256, "image/jpeg", "jpg"]
+    
+    }
+]
+} 
