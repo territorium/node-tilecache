@@ -121,11 +121,33 @@ var server = http.createServer(function (request, response) {
                                 console.log(urlArray[4]);
                                 var mapnik = require('mapnik');
                                 var map = new mapnik.Map(xdim, ydim);
-                                map.loadSync('./' + config.services[index].name_service +'/'+ config.services[index].tilemaps[ind].map);
+                                var stylesheet = './' + config.services[index].name_service +'/'+ config.services[index].tilemaps[ind].map;
+                                map.load(stylesheet, function(err,map) {
+                                     if (err) {
+                                         res.end(err.message);
+                                         }
+                                     map.zoomToBox(bbox);    
+                                    
+                                    var im = new mapnik.Image(xdim, ydim);
+                                    map.render(im, function(err,im) {
+                                        if (err) {
+                                            res.end(err.message);
+                                            } else {
+                                                im.encode('png', function(err,buffer) {
+                                                    if (err) {
+                                                        res.end(err.message);
+                                                        } else {
+                                                            response.writeHead(200, {'Content-Type': 'image/png'});
+                                                            response.end(buffer);
+                                                            }})}})})
+                                
+                                
+                                
+                                
                                 //map.extent = bbox;
-                                map.maximumExtension = bbox;
-                                map.zoomToBox(bbox);
-                                map.renderFileSync('map.png');
+                                //map.maximumExtension = bbox;
+                                
+                               // map.renderFileSync('map.png');
                                 }
             }}}}}
                    if (not_found) {
