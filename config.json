@@ -6,14 +6,24 @@
      "abstractT" : "",
      "tilemaps" : [
         {"title" : "prima mappa",
-        "map" : "mappa.xml",
+        "map" : "world.xml",
+        "SRS" : "EPSG:3005",
+        "href" : "",
+        "profile" : "local",
+        "boundingbox" : [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+        "origin" : [-20037508.34, -20037508.34],
+        "TileFormat" : [800, 800, "image/jpeg", "jpg"],
+        "tilesets" : [8192, 4096,2048, 1024]
+       },
+       {"title" : "altra mappa",
+        "map" : "mappa4.xml",
         "SRS" : "EPSG:3005",
         "href" : "",
         "profile" : "local",
         "boundingbox" : [100000, 100000, 1800000, 1800000],
         "origin" : [0, 0],
         "TileFormat" : [256, 256, "image/jpeg", "jpg"],
-        "tilesets" : [2048, 1024]
+        "tilesets" : [2048, 1024, 512]
        }]    
     },
 {"name_service" : "servizio2",
@@ -21,7 +31,7 @@
      "abstractT" : "",
      "tilemaps" : [
         {"title" : "seconda mappa",
-        "map" : "mappa.xml",
+        "map" : "mappa2.xml",
         "SRS" : "EPSG:3005",
         "href" : "",
         "profile" : "",
