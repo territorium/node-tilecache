@@ -46,6 +46,7 @@ var server = http.createServer(function (request, response) {
                 response.write(body);
   		response.end();
             }
+    
 	if (url == "/") {
                 not_found = false;
 		servizi(response, body, config);
@@ -98,6 +99,7 @@ var server = http.createServer(function (request, response) {
                             //var tilemaps = config.services[index].tilemaps[ind];
                             if ((urlArray[2] >= 0) && (urlArray[2] < (config.services[index].tilemaps[ind].tilesets.length))){
                                 not_found = false;
+                                
                                 var res = config.services[index].tilemaps[ind].tilesets[urlArray[2]];
                                 var xdim = config.services[index].tilemaps[ind].TileFormat[0];
                                 var ydim = config.services[index].tilemaps[ind].TileFormat[1];
@@ -108,38 +110,67 @@ var server = http.createServer(function (request, response) {
                                 var miny = (res * ydim * urlArray[4]) + yorig;
                                 var maxy = (res * ydim * (parseInt(urlArray[4]) + 1)) + yorig;
                                 var bbox = [minx, miny, maxx, maxy];
-                                console.log(urlArray[4] + 1);
-                                console.log("bbox is " + bbox);
-                                console.log('res is ' + res);
-                                console.log('xorig is ' + xorig);
-                                console.log('yorig is ' + yorig);
-                                console.log('minx ' + minx);
-                                console.log('maxx ' + maxx);
-                                console.log('miny ' + miny);
-                                console.log('maxy ' + maxy);
-                                console.log(urlArray[3]);
-                                console.log(urlArray[4]);
+                                var numlevelx = Math.ceil((config.services[index].tilemaps[ind].boundingbox[2] - config.services[index].tilemaps[ind].boundingbox[0])/(xdim*res));
+                                var numlevely = Math.ceil((config.services[index].tilemaps[ind].boundingbox[3] - config.services[index].tilemaps[ind].boundingbox[1])/(ydim*res));
+                                
+                                //controllo l'esistenza del file
+                               var cache = require('./cache.js');
+                               var percorso = cache.coordConvert(config.cache_dir, config.services[index].tilemaps[ind].dir, urlArray[2], urlArray[3], urlArray[4], numlevely, config.services[index].tilemaps[ind].TileFormat[3]);
+                               var root =percorso.join('/');
+                               var esiste = cache.controlla(percorso, '');
+                                //fine controllo
+                                
+                                if (!esiste){ 
+                                console.log('creo il file');
                                 var mapnik = require('mapnik');
+                                var option = {"format" : config.services[index].tilemaps[ind].TileFormat[3]};
                                 var map = new mapnik.Map(xdim, ydim);
                                 var stylesheet = './' + config.services[index].name_service +'/'+ config.services[index].tilemaps[ind].map;
                                 map.load(stylesheet, function(err,map) {
                                      if (err) {
-                                         res.end(err.message);
+                                         response.end(err.message);
                                          }
                                      map.zoomToBox(bbox);    
                                     
                                     var im = new mapnik.Image(xdim, ydim);
+                                    var path = require('path');
+                                    map.renderFileSync(path.resolve(root), option);
+                                    
+                                    console.log('path is: ' + path.resolve(root));
                                     map.render(im, function(err,im) {
                                         if (err) {
-                                            res.end(err.message);
+                                            response.end(err.message);
                                             } else {
-                                                im.encode('png', function(err,buffer) {
+                                                im.encode(option.format, function(err,buffer) {
                                                     if (err) {
-                                                        res.end(err.message);
+                                                        response.end(err.message);
                                                         } else {
                                                             response.writeHead(200, {'Content-Type': 'image/png'});
                                                             response.end(buffer);
-                                                            }})}})})
+                                                            }})}})});
+                                } else {
+                                    console.log('leggo il file');
+                               // var path = require('path');
+                                //var temp = path.resolve(root);
+                                var tt = __dirname +'/'+ root;
+                                console.log('root is: ' + tt);
+                                
+                               // var fd = fs.openSync(tt, 'r');
+                                //fs.open(tt, 'r', function (err, fd){
+                                  //  if (err) {console.log('errore');
+                                    //  response.end(err.message);}
+                                    // else {console.log('file aperto'); 
+                                    fs.readFile(tt, function (err, buffer){
+                                        if (err) {
+                                            response.end(err.message);}
+                                        response.writeHead(200, {'Content-Type': 'image/png'});
+                                        response.end(buffer);
+                                        });
+                                        
+                                 //  });
+                                
+                                
+                                }
                                 
                                 
                                 

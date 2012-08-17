@@ -1,5 +1,9 @@
 {
 "baseurl" : "http://127.0.0.1:3000/",
+"cache_dir" : "cache",
+"srs" : {"EPSG:900913" : "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
+        "EPSG:4326" : "+proj=latlong +datum=WGS84"
+},
 "services" : [
     {"name_service" : "servizio1",
      "title" : "worldmap",
@@ -7,18 +11,20 @@
      "tilemaps" : [
         {"title" : "prima mappa",
         "map" : "world.xml",
-        "SRS" : "EPSG:3005",
+        "SRS" : "EPSG:900913",
         "href" : "",
+        "dir" : "world",
         "profile" : "local",
         "boundingbox" : [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
         "origin" : [-20037508.34, -20037508.34],
-        "TileFormat" : [800, 800, "image/jpeg", "jpg"],
-        "tilesets" : [8192, 4096,2048, 1024]
+        "TileFormat" : [800, 800, "image/png", "png"],
+        "tilesets" : [25047, 8192, 4096,2048, 1024]
        },
        {"title" : "altra mappa",
         "map" : "mappa4.xml",
         "SRS" : "EPSG:3005",
         "href" : "",
+        "dir" : "altra",
         "profile" : "local",
         "boundingbox" : [100000, 100000, 1800000, 1800000],
         "origin" : [0, 0],
@@ -34,6 +40,7 @@
         "map" : "mappa2.xml",
         "SRS" : "EPSG:3005",
         "href" : "",
+        "dir" : "country",
         "profile" : "",
         "boundingbox" : [100000, 100000, 1800000, 1800000],
         "origin" : [0, 0],
