@@ -12,9 +12,6 @@ exports.coordConvert = function (cachedir, dir, leveldir, xdir, ydir, levely, ex
     while (j < 9 - m){
         ydir = '0' + ydir;
         j++;}
-    //console.log('livello = ' +leveldir);
-    //console.log('xdir = ' +xdir);
-    //console.log('ydir = ' +ydir);
     var x1, x2, x3, y1, y2, y3;
     x1 = xdir.substring(0,3);
     x2 = xdir.substring(3,6);
@@ -22,8 +19,6 @@ exports.coordConvert = function (cachedir, dir, leveldir, xdir, ydir, levely, ex
     y1 = ydir.substring(0,3);
     y2 = ydir.substring(3,6);
     y3 = ydir.substring(6,9) +'.'+ ext;
-    //console.log(x1 + '/' + x2 + '/' + x3 + '/' + y1 + '/' + y2 + '/' + y3);
-    //return [leveldir, x1, x2, x3, y1, y2, y3];
     var dirArray = [cachedir, dir, leveldir, x1, x2, x3, y1, y2, y3];
     return dirArray;
     //esiste (dirArray, '');
@@ -33,9 +28,7 @@ exports.controlla = function (file, root){
     }
     
  function esiste (file, root){
-     //path.resolve('wwwroot', 'static_files/png/', '../gif/image.gif')
      var fs = require('fs'), path= require('path');
-     console.log(root);
      if (file.length == 1){
          return fs.existsSync(path.resolve(root, file[0]));
          }
