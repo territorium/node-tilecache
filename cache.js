@@ -28,7 +28,8 @@ exports.controlla = function (file, root){
     }
     
  function esiste (file, root){
-     var fs = require('fs'), path= require('path');
+    console.log('controllo');
+    var fs = require('fs'), path= require('path');
      if (file.length == 1){
          return fs.existsSync(path.resolve(root, file[0]));
          }
