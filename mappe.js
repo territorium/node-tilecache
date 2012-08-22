@@ -64,7 +64,6 @@ if (typeof(tilemaps) !== 'undefined') {
                                 map.extent = tilemaps.boundingbox;
                                 map.srs = config.srs[tilemaps.SRS];
                                 map.zoomToBox(bbox);    
-                                console.log(map);
                                 var im = new mapnik.Image(xdim, ydim);
                                 var path = require('path');
                                 map.renderFileSync(path.resolve(root), option);
@@ -73,21 +72,13 @@ if (typeof(tilemaps) !== 'undefined') {
                                     if (err) {
                                         er = true;
                                         return callback (er, err.message);
-                                        //buffer = err.message;
                                     } else {
                                         im.encode(option.format, function(err,buffer) {
                                             if (err) {
                                                 er = true;
-                                                console.log('primo');
-                                                //response.end(err.message);
                                                 return callback (er, err.message);
-                                                //buffer = err.message;
                                             } else {
                                                 er = false;
-
-                                                //buf = buffer;
-                                                //response.writeHead(200, {'Content-Type': 'image/png'});
-                                                //response.end(buffer);
                                                 return callback (er, buffer);
                                             }
                                         });
@@ -99,15 +90,10 @@ if (typeof(tilemaps) !== 'undefined') {
                         } else {
                             er = false;
                             buf = buffer;
-                            //console.log(buffer);
                             return callback (er, buffer);
-                       // response.writeHead(200, {'Content-Type': 'image/png'});
-                        //response.end(buffer);
                         }
                     });    
                 }
             }
         }
-
-//return callback (er, buffer);
 }

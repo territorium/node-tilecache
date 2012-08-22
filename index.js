@@ -42,11 +42,15 @@ var server = http.createServer(function (request, response) {
             }
         else if (urlArray.length == 2){
             if (url_prova.pathname !== url_prova.path){
-                
+                response.setHeader("Content-Type", "text/plain")
                 console.log(url_prova.query);
             var child = require('child_process').fork('./seeding.js');
             child.send({"url" : url_prova, "config" : config, urlA : urlArray});
-            console.log('operazione in corso');
+            console.log('seeding in corso');
+            body = 'Seeding in corso';
+            response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);
         } else {
             response.setHeader("Content-Type", "text/xml");
             //not_found = wxml.tilemap(response, body, config, urlArray);
