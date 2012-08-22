@@ -16,3 +16,16 @@ mkdir.on('exit', function (code) {
 });
 
 }
+
+exports.execmkdir = function (path){
+    var callback = arguments[arguments.length - 1];
+//if (typeof(callback) !== 'function') callback = function(){};
+var exec = require('child_process').exec;
+    mkdir = exec('mkdir -p '+ path, function (error, stdout, stderr) {
+    console.log('stdout: ' + stdout);
+    console.log('stderr: ' + stderr);
+    });
+//mkdir.on('exit', function (error) {
+//  return callback(code);
+
+    }

@@ -4,6 +4,7 @@ var host = config.host;
 var port = config.port;
 var http = require('http'), fs = require('fs');
 var server = http.createServer(function (request, response) {
+        var seed = require('child_process').fork('./seeding.js');
 	
         
         var url_prova = require('url').parse(request.url, true);
@@ -44,8 +45,7 @@ var server = http.createServer(function (request, response) {
             if (url_prova.pathname !== url_prova.path){
                 response.setHeader("Content-Type", "text/plain")
                 console.log(url_prova.query);
-            var child = require('child_process').fork('./seeding.js');
-            child.send({"url" : url_prova, "config" : config, urlA : urlArray});
+            seed.send({"url" : url_prova, "config" : config, urlA : urlArray});
             console.log('seeding in corso');
             body = 'Seeding in corso';
             response.writeHead(200, {
@@ -106,8 +106,16 @@ var server = http.createServer(function (request, response) {
             console.log('errore not found');
             response.statusCode = 404;
             response.setHeader('Content-Type', 'text/plain');
-            response.end('Not Found');}		
+            response.end('Not Found');}	
+            
+            var count=0;
+            seed.on('message', function(m) {
+                count++;
+            console.log('Elaborato il file :'+ count + ' di ' + m.tot + 'alle ' + m.ora);
+            });
 });
 server.listen(port, host);
 console.log("server listening at " + host + " on port " + port);
+
+
 

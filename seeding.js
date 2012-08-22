@@ -28,13 +28,20 @@ process.on('message', function(q) {
                     for (y = yini; y <= yfin; y++){ 
                           totale++; 
             var mappe = require('./mappe.js');
+            //console.log(y);
             var newArray = [urlArray[0], urlArray[1], l, x, y];
             mappe.mappa(config, newArray, function(err, buffer){
-                if (err) {console.log('errore in seeding');}
-            });
-            }}}
+                if (err) { console.log('erorre seeding');}
+                else {
+                        var time = Date();
+                process.send({tot : totale, ora : time});
+                
+                }
+
+            });}}
         }
-    }
+        }}
+    
 console.log('file da elaborare= '+ totale);
 //process.exit();
 });
