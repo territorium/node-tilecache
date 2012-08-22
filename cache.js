@@ -3,6 +3,7 @@ exports.coordConvert = function (cachedir, dir, leveldir, xdir, ydir, levely, ex
     if (leveldir <= 9){
         leveldir = '0' + leveldir;
         }
+    xdir = xdir.toString();
     ydir = ((levely - ydir) - 1).toString();  
     var i = 0, j = 0;
     var l = xdir.length, m = ydir.length;
@@ -28,7 +29,8 @@ exports.controlla = function (file, root){
     }
     
  function esiste (file, root){
-     var fs = require('fs'), path= require('path');
+    console.log('controllo');
+    var fs = require('fs'), path= require('path');
      if (file.length == 1){
          return fs.existsSync(path.resolve(root, file[0]));
          }

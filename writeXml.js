@@ -1,46 +1,35 @@
 exports.servizi = function (config){
     var callback = arguments[arguments.length - 1];
     //if (typeof(callback) !== 'function') callback = function(){};
-    //response.setHeader("Content-Type", "text/xml");
     var body = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><Services>"
     for (index in config.services) {
         var service = config.services[index];
         body += "<TileMapService title=\"" + service.title;
-        body += "\" href=\"http://"+ config.host +":" + config.port + "/" + service.name_service + "\"";
+        body += "\" href=\"http://"+ config.host +":" + config.port + "/" + index + "\"";
         body +="/>";
         }
     body += " </Services>";
     er = false;
     return callback(er, body);
-    //response.writeHead(200, {
-        //'Content-Length': body.length});
-   // response.end(body);
 }
             
 exports.risorse =  function (config, urlArray){
     var callback = arguments[arguments.length - 1];
     //if (typeof(callback) !== 'function') callback = function(){};
     var er = true;
-    for (index in config.services) {
-        var service = config.services[index];
-        if (urlArray[0] == (service.name_service)) {
+        var service = config.services[urlArray[0]];
+        if (typeof(service) !== 'undefined') {
         er = false;
-    //response.setHeader("Content-Type", "text/xml");
     var body = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><TileMapService version=\"1.0.0\" services=\"http://" + config.host +":" + config.port + "\">";
-    //var servizio = config.services[index];
     body += "<Title>" + service.title +"</Title>";
     body += "<Abstract>" + service.abs + "</Abstract><TileMaps>";
-    for (ind in service.tilemaps){
-        var tilemaps = service.tilemaps[ind];
+    for (index in service.tilemaps){
+        var tilemaps = service.tilemaps[index];
         body += "<TileMap title=\"" + tilemaps.title + "\" srs=\"" + tilemaps.SRS + "\" profile=\"" + tilemaps.profile;
-        body +="\" href=\"http://" + config.host + ":" + config.port + "/" + service.name_service + "/" + tilemaps.map+"\" />"
+        body +="\" href=\"http://" + config.host + ":" + config.port + "/" + urlArray[0] + "/" + index +"\" />"
     }
     body += "</TileMaps></TileMapService>";
-    
-    //response.writeHead(200, {
-      //  'Content-Length': body.length});
-    //response.end(body);
-    }}
+    } else {er = true;}
 return callback(er, body);
 }
 
@@ -48,16 +37,13 @@ exports.tilemap = function (config, urlArray){
     var callback = arguments[arguments.length - 1];
     //if (typeof(callback) !== 'function') callback = function(){};
     var er = true;
-    for (index in config.services) {
-        var service = config.services[index];
-        if (urlArray[0] == (service.name_service)) {
-            for (ind in service.tilemaps){
-                var tilemaps = service.tilemaps[ind];
-                if (urlArray[1] == (tilemaps.map)){
-                er = false;
-    //response.setHeader("Content-Type", "text/xml");
+    var service = config.services[urlArray[0]];
+    if (typeof(service) !== 'undefined'){
+    var tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
+    if (typeof(tilemaps) !== 'undefined') {
+    er = false;
     var body = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";  
-    body += "<TileMap version=\"1.0.0\" tilemapservice=\"http://" + config.host +":" + config.port + "/" + service.name_service+"\">";
+    body += "<TileMap version=\"1.0.0\" tilemapservice=\"http://" + config.host +":" + config.port + "/" + urlArray[0]+"\">";
     body += "<Title>"+tilemaps.title+"</Title>";
     body += "<Abstract>"+service.abs+"</Abstract>";
     body += "<SRS>"+tilemaps.SRS+"</SRS>";
@@ -68,16 +54,12 @@ exports.tilemap = function (config, urlArray){
     body += "\" mime-type=\""+tilemaps.TileFormat[2]+"\" extension=\""+tilemaps.TileFormat[3]+"\" />";
     body += "<TileSets profile=\""+tilemaps.profile+"\">";
     for (upp in tilemaps.tilesets){
-    body += "<TileSet href=\"http://" + config.host + ":" + config.port + "/" + service.name_service + "/" + tilemaps.map + "/" + upp
+    body += "<TileSet href=\"http://" + config.host + ":" + config.port + "/" + urlArray[0] + "/" + urlArray[1] + "/" + upp
     body += "\" units-per-pixel=\""+tilemaps.tilesets[upp]+"\" order=\""+upp+"\" />"
     }
-    body += "</TileSets></TileMap>";
-    //response.writeHead(200, {
-   // 'Content-Length': body.length});
-  //  response.end(body);        
+    body += "</TileSets></TileMap>";        
     }
-                 
-            }
-            }}
+        }         
+
 return callback(er, body);
 }

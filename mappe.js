@@ -1,153 +1,100 @@
-exports.mappa = function (response, config, urlArray){
+exports.mappa = function (config, urlArray){
+var callback = arguments[arguments.length - 1];
+//if (typeof(callback) !== 'function') callback = function(){};
 var fs = require('fs'), cache = require('./cache');
-not_found = true;
-for (index in config.services) {
-    if (urlArray[0] == (config.services[index].name_service)) {
-        for (ind in config.services[index].tilemaps){
-            if (urlArray[1] == (config.services[index].tilemaps[ind].map)){
-                //var tilemaps = config.services[index].tilemaps[ind];
-                if ((urlArray[2] >= 0) && (urlArray[2] < (config.services[index].tilemaps[ind].tilesets.length))){
-                    not_found = false;
-                    var res = config.services[index].tilemaps[ind].tilesets[urlArray[2]];
-                    var xdim = config.services[index].tilemaps[ind].TileFormat[0];
-                    var ydim = config.services[index].tilemaps[ind].TileFormat[1];
-                    var xorig = config.services[index].tilemaps[ind].origin[0];
-                    var yorig = config.services[index].tilemaps[ind].origin[1];
+var er = true;
+
+var service = config.services[urlArray[0]];
+if (typeof(service) !== 'undefined'){
+var tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
+if (typeof(tilemaps) !== 'undefined') {
+                if ((urlArray[2] >= 0) && (urlArray[2] < (tilemaps.tilesets.length))){
+                    er = false;
+
+                    var res = tilemaps.tilesets[urlArray[2]];
+                    var xdim = tilemaps.TileFormat[0];
+                    var ydim = tilemaps.TileFormat[1];
+                    var xorig = tilemaps.origin[0];
+                    var yorig = tilemaps.origin[1];
                     var minx = (res * xdim * urlArray[3]) + xorig;
                     var maxx = (res * xdim * (parseInt(urlArray[3]) + 1)) + xorig;
                     var miny = (res * ydim * urlArray[4]) + yorig;
                     var maxy = (res * ydim * (parseInt(urlArray[4]) + 1)) + yorig;
                     var bbox = [minx, miny, maxx, maxy];
-                    var numlevelx = Math.ceil((config.services[index].tilemaps[ind].boundingbox[2] - config.services[index].tilemaps[ind].boundingbox[0])/(xdim*res));
-                    var numlevely = Math.ceil((config.services[index].tilemaps[ind].boundingbox[3] - config.services[index].tilemaps[ind].boundingbox[1])/(ydim*res));
+                    var numlevelx = Math.ceil((tilemaps.boundingbox[2] - tilemaps.boundingbox[0])/(xdim*res));
+                    var numlevely = Math.ceil((tilemaps.boundingbox[3] - tilemaps.boundingbox[1])/(ydim*res));
                     if (urlArray[3] > (numlevelx -1) || urlArray[4] > (numlevely - 1)){
-                        response.statusCode = 404;
-                        response.setHeader('Content-Type', 'text/plain');
-                        response.write('index out of bounds: ');
-                        response.write(' Max x level = ' + (numlevelx - 1));
-                        response.write(' Max y level = ' + (numlevely - 1));
-                        response.end();
-                        return not_found;
+                        var body = 'Index out of bounds: Max x level = ' + (numlevelx - 1) + ' - Max y level = ' + (numlevely - 1);
+                        er = true;
+                        return callback(er, body);
                         }
                     
                     //controllo l'esistenza del file
                     var cache = require('./cache.js');
-                    var percorso = cache.coordConvert(config.cache_dir, config.services[index].tilemaps[ind].dir, urlArray[2], urlArray[3], urlArray[4], numlevely, config.services[index].tilemaps[ind].TileFormat[3]);
-                    var root = __dirname + '/' + percorso.join('/');
+                    
+                    var percorso = cache.coordConvert(config.cache_dir, tilemaps.cache, urlArray[2], urlArray[3], urlArray[4], numlevely, tilemaps.TileFormat[3]);
+                    var root = config.baseurl + percorso.join('/');
                     //fine controllo
-                    var option = {"format" : config.services[index].tilemaps[ind].TileFormat[3]};
-                    var stylesheet = './' + config.services[index].name_service +'/'+ config.services[index].tilemaps[ind].map;
+                    var format ='';
+                    if (tilemaps.TileFormat[3] == 'jpg'){
+                        format = 'jpeg';
+                        } else {
+                            format = tilemaps.TileFormat[3];
+                        }
+                    var option = {"format" : format};
+                    var stylesheet = config.baseurl + config.service_dir +'/'+ tilemaps.dir + '/'+ urlArray[1];
                     var fs = require('fs');
-                    //var cache = require('./cache.js');
+                    var buffer;
+                    var mkdir = require('./mkdir.js');
                     fs.readFile(root, function (err, buffer){
+                        
                         if (err) {
-                            var esiste = cache.controlla(percorso, '');
+                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
+                               if (err) {er = true;
+                                    return callback(err, buffer);} 
+                                else {
                             var mapnik = require('mapnik');
-                            var map = new mapnik.Map(xdim, ydim);
+                            var map = new mapnik.Map(xdim, ydim, config.srs[tilemaps.SRS]);
                             map.load(stylesheet, function(err,map) {
                                 if (err) {
-                                    response.end(err.message);
-                                }
+                                    er = true;
+                                    return callback (er, err.message);
+                                } else {
+                                map.maximumExtent = tilemaps.boundingbox;
+                                map.extent = tilemaps.boundingbox;
+                                map.srs = config.srs[tilemaps.SRS];
                                 map.zoomToBox(bbox);    
                                 var im = new mapnik.Image(xdim, ydim);
                                 var path = require('path');
                                 map.renderFileSync(path.resolve(root), option);
                                 console.log('creo il file ' + path.resolve(root));
-                                 map.render(im, function(err,im) {
+                                map.render(im, function(err,im) {
                                     if (err) {
                                         er = true;
-                                        response.end(err.message);
+                                        return callback (er, err.message);
                                     } else {
                                         im.encode(option.format, function(err,buffer) {
                                             if (err) {
-                                                response.end(err.message);
+                                                er = true;
+                                                return callback (er, err.message);
                                             } else {
-                                                //buf = buffer;
-                                                response.writeHead(200, {'Content-Type': 'image/png'});
-                                                response.end(buffer);
+                                                er = false;
+                                                return callback (er, buffer);
                                             }
                                         });
                                     }
                                 });
+                            }
                             });
+                        }});
                         } else {
-                       response.writeHead(200, {'Content-Type': 'image/png'});
-                       response.end(buffer);
-                       }
-                    });    
-                }
-            }
-        }
-    }
-}    
-return not_found;    
-}
-
-exports.crea = function (response, config, urlArray){
-var fs = require('fs'), cache = require('./cache');
-not_found = true;
-for (index in config.services) {
-    if (urlArray[0] == (config.services[index].name_service)) {
-        for (ind in config.services[index].tilemaps){
-            if (urlArray[1] == (config.services[index].tilemaps[ind].map)){
-                //var tilemaps = config.services[index].tilemaps[ind];
-                if ((urlArray[2] >= 0) && (urlArray[2] < (config.services[index].tilemaps[ind].tilesets.length))){
-                    not_found = false;
-                    var res = config.services[index].tilemaps[ind].tilesets[urlArray[2]];
-                    var xdim = config.services[index].tilemaps[ind].TileFormat[0];
-                    var ydim = config.services[index].tilemaps[ind].TileFormat[1];
-                    var xorig = config.services[index].tilemaps[ind].origin[0];
-                    var yorig = config.services[index].tilemaps[ind].origin[1];
-                    var minx = (res * xdim * urlArray[3]) + xorig;
-                    var maxx = (res * xdim * (parseInt(urlArray[3]) + 1)) + xorig;
-                    var miny = (res * ydim * urlArray[4]) + yorig;
-                    var maxy = (res * ydim * (parseInt(urlArray[4]) + 1)) + yorig;
-                    var bbox = [minx, miny, maxx, maxy];
-                    var numlevelx = Math.ceil((config.services[index].tilemaps[ind].boundingbox[2] - config.services[index].tilemaps[ind].boundingbox[0])/(xdim*res));
-                    var numlevely = Math.ceil((config.services[index].tilemaps[ind].boundingbox[3] - config.services[index].tilemaps[ind].boundingbox[1])/(ydim*res));
-                    if (urlArray[3] > (numlevelx -1) || urlArray[4] > (numlevely - 1)){
-                        response.statusCode = 404;
-                        response.setHeader('Content-Type', 'text/plain');
-                        response.write('index out of bounds: ');
-                        response.write(' Max x level = ' + (numlevelx - 1));
-                        response.write(' Max y level = ' + (numlevely - 1));
-                        response.end();
-                        return not_found;
+                            er = false;
+                            buf = buffer;
+                            return callback (er, buffer);
                         }
-                    
-                    //controllo l'esistenza del file
-                    var cache = require('./cache.js');
-                    var percorso = cache.coordConvert(config.cache_dir, config.services[index].tilemaps[ind].dir, urlArray[2], urlArray[3], urlArray[4], numlevely, config.services[index].tilemaps[ind].TileFormat[3]);
-                    var root = __dirname + '/' + percorso.join('/');
-                    //fine controllo
-                    var option = {"format" : config.services[index].tilemaps[ind].TileFormat[3]};
-                    var stylesheet = './' + config.services[index].name_service +'/'+ config.services[index].tilemaps[ind].map;
-                    var fs = require('fs');
-                    //var cache = require('./cache.js');
-                    fs.readFile(root, function (err, buffer){
-                        if (err) {
-                            var esiste = cache.controlla(percorso, '');
-                            var mapnik = require('mapnik');
-                            var map = new mapnik.Map(xdim, ydim);
-                            map.load(stylesheet, function(err,map) {
-                                if (err) {
-                                    response.end(err.message);
-                                }
-                                map.zoomToBox(bbox);    
-                                var im = new mapnik.Image(xdim, ydim);
-                                var path = require('path');
-                                map.renderFileSync(path.resolve(root), option);
-                                console.log('creo il file ' + path.resolve(root));
-                            });
-                        } else {
-                       // response.writeHead(200, {'Content-Type': 'image/png'});
-                       // response.end(buffer);
-                       }
                     });    
                 }
             }
         }
-    }
-}    
-return not_found;    
+ 
 }

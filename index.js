@@ -1,30 +1,85 @@
 // JavaScript Document
+var config = require('./config.json');
+var host = config.host;
+var port = config.port;
 var http = require('http'), fs = require('fs');
 var server = http.createServer(function (request, response) {
+	
+        
+        var url_prova = require('url').parse(request.url, true);
+        var url = url_prova.pathname;
+        //console.log(url_prova);
         //suddivisione url
-	var url = request.url;
         var urlArray = url.split('/');
         if (urlArray[(urlArray.length -1)] == '') {
             urlArray = urlArray.slice(1, -1);}
         else 
         urlArray = urlArray.slice(1);
-        var body = "";
-	var config = require('./config.json');
+        //var body = "";
         var not_found = true; //nel caso in cui la url richiesta non corrisponda a nulla
         var wxml = require ('./writeXml');
 	if (url == "/") {
-                not_found = false;
-                wxml.servizi(response, body, config);
+                response.setHeader("Content-Type", "text/xml");
+                wxml.servizi(config, function (err, body){
+                    if (err) not_found = true;
+                    else {
+                    not_found= false;
+                    response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);}
+                    });
 		}
         else if (urlArray.length == 1){
-           not_found = wxml.risorse(response, body, config, urlArray);
+            response.setHeader("Content-Type", "text/xml");
+            wxml.risorse(config, urlArray, function (err, body){
+                if (err) not_found = true;
+                else {
+                    not_found = false;
+                    response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);}
+                    });
             }
         else if (urlArray.length == 2){
-            not_found = wxml.tilemap(response, body, config, urlArray);
+            if (url_prova.pathname !== url_prova.path){
+                response.setHeader("Content-Type", "text/plain")
+                console.log(url_prova.query);
+            var child = require('child_process').fork('./seeding.js');
+            child.send({"url" : url_prova, "config" : config, urlA : urlArray});
+            console.log('seeding in corso');
+            body = 'Seeding in corso';
+            response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);
+        } else {
+            response.setHeader("Content-Type", "text/xml");
+            //not_found = wxml.tilemap(response, body, config, urlArray);
+            wxml.tilemap(config, urlArray, function (err, body){
+                if (err) not_found = true;
+                else {
+                    not_found = false;
+                    response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);}
+                    });
+                }
             }
         else if (urlArray.length == 5){
             var mappe = require('./mappe.js');
-            not_found = mappe.mappa(response, config, urlArray);
+            //not_found = mappe.mappa(response, config, urlArray);
+            mappe.mappa(config, urlArray, function(err, buffer){
+                if (err) { not_found = false;
+                    response.statusCode = 404;
+                    response.setHeader('Content-Type', 'text/plain');
+                    console.log('errore');
+                    response.end(buffer);	
+                } else {
+                    console.log('mostro la mappa');
+                    not_found = false;
+                    response.writeHead(200, {'Content-Type': config.services[urlArray[0]].tilemaps[urlArray[1]].TileFormat[2]});
+                    response.end(buffer);
+                }
+            });
             }
         else if (urlArray.length == 8){
             console.log(urlArray);
@@ -47,10 +102,12 @@ var server = http.createServer(function (request, response) {
                 }
             }
         }
-        if (not_found) {
+        else if (not_found) {
+            console.log('errore not found');
             response.statusCode = 404;
             response.setHeader('Content-Type', 'text/plain');
             response.end('Not Found');}		
 });
-server.listen(3000);
+server.listen(port, host);
+console.log("server listening at " + host + " on port " + port);
 
