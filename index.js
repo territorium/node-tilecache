@@ -1,10 +1,14 @@
 // JavaScript Document
-        var config = require('./config.json');
-        var host = config.host;
-        var port = config.port;
+var config = require('./config.json');
+var host = config.host;
+var port = config.port;
 var http = require('http'), fs = require('fs');
 var server = http.createServer(function (request, response) {
-	var url = request.url;
+	
+        
+        var url_prova = require('url').parse(request.url, true);
+        var url = url_prova.pathname;
+        //console.log(url_prova);
         //suddivisione url
         var urlArray = url.split('/');
         if (urlArray[(urlArray.length -1)] == '') {
@@ -38,6 +42,13 @@ var server = http.createServer(function (request, response) {
                     });
             }
         else if (urlArray.length == 2){
+            if (url_prova.pathname !== url_prova.path){
+                
+                console.log(url_prova.query);
+            var child = require('child_process').fork('./seeding.js');
+            child.send({"url" : url_prova, "config" : config, urlA : urlArray});
+            console.log('operazione in corso');
+        } else {
             response.setHeader("Content-Type", "text/xml");
             //not_found = wxml.tilemap(response, body, config, urlArray);
             wxml.tilemap(config, urlArray, function (err, body){
@@ -48,14 +59,16 @@ var server = http.createServer(function (request, response) {
                     'Content-Length': body.length});
                     response.end(body);}
                     });
+                }
             }
         else if (urlArray.length == 5){
             var mappe = require('./mappe.js');
             //not_found = mappe.mappa(response, config, urlArray);
-            mappe.mappa(response, config, urlArray, function(err, buffer){
+            mappe.mappa(config, urlArray, function(err, buffer){
                 if (err) { not_found = false;
                     response.statusCode = 404;
                     response.setHeader('Content-Type', 'text/plain');
+                    console.log('errore');
                     response.end(buffer);	
                 } else {
                     console.log('mostro la mappa');

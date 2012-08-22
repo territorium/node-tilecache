@@ -3,6 +3,7 @@ exports.coordConvert = function (cachedir, dir, leveldir, xdir, ydir, levely, ex
     if (leveldir <= 9){
         leveldir = '0' + leveldir;
         }
+    xdir = xdir.toString();
     ydir = ((levely - ydir) - 1).toString();  
     var i = 0, j = 0;
     var l = xdir.length, m = ydir.length;
