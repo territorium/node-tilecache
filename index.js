@@ -31,7 +31,6 @@ var server = http.createServer(function (request, response) {
 		}
         else if (urlArray.length == 1){
             response.setHeader("Content-Type", "text/xml");
-            //not_found = wxml.risorse(response, body, config, urlArray);
             wxml.risorse(config, urlArray, function (err, body){
                 if (err) not_found = true;
                 else {
@@ -73,7 +72,7 @@ var server = http.createServer(function (request, response) {
                 } else {
                     console.log('mostro la mappa');
                     not_found = false;
-                    response.writeHead(200, {'Content-Type': 'image/png'});
+                    response.writeHead(200, {'Content-Type': config.services[urlArray[0]].tilemaps[urlArray[1]].TileFormat[2]});
                     response.end(buffer);
                 }
             });
