@@ -28,12 +28,14 @@ process.on('message', function(q) {
                 
             
             for (l = zfrom; l <= zto; l++){
-                var xini = Math.floor((bbox[0] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l]));
-                var yini = Math.floor((bbox[1] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l]));
                 if (bbox.length == 4) {
+                    var xini = Math.floor((bbox[0] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l]));
+                    var yini = Math.floor((bbox[1] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l]));
                     var xfin = Math.ceil((bbox[2] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l])) -1;
                     var yfin = Math.ceil((bbox[3] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l])) -1;}
                 else {
+                    var xini = Math.floor((tilemaps.boundingbox[0] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l]));
+                    var yini = Math.floor((tilemaps.boundingbox[1] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l]));
                     var xfin = Math.ceil((tilemaps.boundingbox[2] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l])) -1;
                     var yfin = Math.ceil((tilemaps.boundingbox[3] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l])) -1;}
                 for (x = xini; x <= xfin; x++){
