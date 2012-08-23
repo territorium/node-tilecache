@@ -1,11 +1,16 @@
-    var count = 0;
     var EventEmitter = require('events').EventEmitter;
     var ee = new EventEmitter();
     var mappe = require('./mappe.js');
     var config;
     var coda =[];
+    var count = 0;
     var totale = 0;
     var incoda = 0;
+    var service;
+    var tilemaps;
+    var boundingbox;
+    var from;
+    var to;
 
 process.on('message', function(q) {
     
@@ -16,18 +21,18 @@ process.on('message', function(q) {
     var urlArray = q.urlA;
     config = q.config;
     var bbox = url_prova.query.bbox.split('/');
-    var zfrom = url_prova.query.from;
-    var zto = url_prova.query.to;
-    var service = config.services[urlArray[0]];
+    from = url_prova.query.from;
+    to = url_prova.query.to;
+    service = config.services[urlArray[0]];
     if (typeof(service) !== 'undefined'){
-        var tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
+        tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
     if (typeof(tilemaps) !== 'undefined') {            
 
             var l, x ,y;
-            if (zto == null) {zto = zfrom;}
+            if (to == null) {to = from;}
                 
             
-            for (l = zfrom; l <= zto; l++){
+            for (l = from; l <= to; l++){
                 if (bbox.length == 4) {
                     var xini = Math.floor((bbox[0] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l]));
                     var yini = Math.floor((bbox[1] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l]));
@@ -38,6 +43,7 @@ process.on('message', function(q) {
                     var yini = Math.floor((tilemaps.boundingbox[1] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l]));
                     var xfin = Math.ceil((tilemaps.boundingbox[2] - tilemaps.origin[0])/(tilemaps.TileFormat[0] * tilemaps.tilesets[l])) -1;
                     var yfin = Math.ceil((tilemaps.boundingbox[3] - tilemaps.origin[1])/(tilemaps.TileFormat[1] * tilemaps.tilesets[l])) -1;}
+                boundingbox = [xini, yini, xfin, yfin];
                 for (x = xini; x <= xfin; x++){
                     for (y = yini; y <= yfin; y++){ 
                           totale++; 
@@ -51,8 +57,8 @@ process.on('message', function(q) {
         }
 }
 else if (op == 'int'){
-    process.send({tot : totale, incorso : count, incoda : incoda});
-    }
+    process.send({service : service, tilemaps : tilemaps, boundingbox : boundingbox, from : from, tu : to, tot : totale, incorso : count, incoda : incoda});
+        }
 
 });
 
@@ -72,6 +78,9 @@ else if (op == 'int'){
             ee.emit('event', coda.shift());
             //console.log(coda);
             }
+        else if (coda.length == 0 && count == 0){
+            process.exit();
+          }
         });
         
     ee.on('wait', function(urlA){

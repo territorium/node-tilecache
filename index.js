@@ -4,22 +4,18 @@ var host = config.host;
 var port = config.port;
 var http = require('http'), fs = require('fs');
 var child = require('child_process');
-var seed;
-var seedProc = [];
+var seedProc = new Array;
 var server = http.createServer(function (request, response) {
-        
-	
-        
+    var seed = child.fork('./seeding.js');
         var url_prova = require('url').parse(request.url, true);
         var url = url_prova.pathname;
-        //console.log(url_prova);
-        //suddivisione url
+//        console.log(url_prova);
+//        suddivisione url
         var urlArray = url.split('/');
         if (urlArray[(urlArray.length -1)] == '') {
             urlArray = urlArray.slice(1, -1);}
         else 
         urlArray = urlArray.slice(1);
-        //var body = "";
         var not_found = true; //nel caso in cui la url richiesta non corrisponda a nulla
         var wxml = require ('./writeXml');
 	if (url == "/") {
@@ -48,8 +44,7 @@ var server = http.createServer(function (request, response) {
             if (url_prova.pathname !== url_prova.path){
                 
                 if (url_prova.query.op== 'seed'){
-                    seed = child.fork('./seeding.js');
-                    seedProc.push(seed);
+                    seedProc[seed.pid] = seed;
                     response.setHeader("Content-Type", "text/plain");
                 console.log(url_prova.query);
             seed.send({"url" : url_prova, "config" : config, urlA : urlArray});
@@ -59,17 +54,14 @@ var server = http.createServer(function (request, response) {
                     'Content-Length': body.length});
                     response.end(body);
                     } else if (url_prova.query.op== 'int'){
-                      var cseed = seedProc[0];  
-                      cseed.send({"url" : url_prova, "config" : config, urlA : urlArray});
-                      response.setHeader("Content-Type", "text/plain");
-                        cseed.on('message', function(m) {
-            body = 'File totali: '+ m.tot + ' - file in elaborazione: ' + m.incorso + ' - file in coda: ' + m.incoda + ' - file elaborati:' + ((m.tot - m.incorso) - m.incoda);
-            console.log(body);
-            });    
+                        seedInt(url_prova, function(body){
+                            
+                            console.log('stampo');
+                                                  response.setHeader("Content-Type", "text/plain");    
             response.writeHead(200, {
                     'Content-Length': body.length});
                     response.end(body);
-                        
+                            });
                         }
                 
         } else {
@@ -95,45 +87,55 @@ var server = http.createServer(function (request, response) {
                     console.log('errore');
                     response.end(buffer);	
                 } else {
-                    console.log('mostro la mappa');
                     not_found = false;
                     response.writeHead(200, {'Content-Type': config.services[urlArray[0]].tilemaps[urlArray[1]].TileFormat[2]});
                     response.end(buffer);
                 }
             });
             }
-        else if (urlArray.length == 8){
-            console.log(urlArray);
-            var mappe = require('./mappe.js');
-            if (urlArray[2] == 'create'){
-                var level = urlArray[3];
-                var xini = urlArray[4];
-                var xfin = urlArray[5];
-                var yini = urlArray[6];
-                var yfin = urlArray[7];
-                var i = 0, j = 0;
-               // var newArray = [urlArray[0], urlArray[1], urlArray[3], '0', '1'];
-              //  not_found = mappe.mappa(response, config, newArray);
-                for (i = xini; i <= xfin; i++){
-                    for (j = yini; j <= yfin; j++){
-                        var newArray = [urlArray[0], urlArray[1], urlArray[3], i + '', j + ''];
-                        console.log(newArray);
-                    mappe.crea(response, config, newArray);
-                    }
-                }
-            }
-        }
         else if (not_found) {
             console.log('errore not found');
             response.statusCode = 404;
             response.setHeader('Content-Type', 'text/plain');
             response.end('Not Found');}	
         
-        
+  seed.on('exit', function (code, signal){
+      console.log('process exit with code and signal ' + code + ' ' + signal);
+      seedProc.splice(seed.pid, 1);
+      });
+
+function seedInt(url_prova){
+     var callback = arguments[arguments.length - 1];
+    var i = 0, j = 0;
+    if (url_prova.search == '?op=int'){
+        var body = 'Processi in esecuzione:\n';
+        for (index in seedProc){
+            j++;
+            
+            seedProc[index].send({"url" : url_prova});
+            console.log(url_prova);
+            seedProc[index].on('message', function(m) {
+            i++;
+            console.log(i);
+            console.log(j);
+            body += 'Pid: ' + this.pid +'\n';
+            body += 'Service: ' + m.service +'\n';
+            body += 'Tilemaps: ' + m.tilemaps + '\n';
+            body += 'Boundingbox: ' + m.boundingbox + '\n';
+            body += 'From level: ' + m.from + '\n';
+            body += 'To level: ' + m.to + '\n';
+            body += 'Info: File totali: '+ m.tot + ' - file in elaborazione: ' + m.incorso + ' - file in coda: ' + m.incoda + ' - file elaborati:' + ((m.tot - m.incorso) - m.incoda) + '\n';
+            console.log(body);     
+            if (i == j){
+                return callback(body);
+                }
+            });
+            }
+    }
+}
+
+      
             
 });
 server.listen(port, host);
 console.log("server listening at " + host + " on port " + port);
-
-
-

@@ -52,10 +52,10 @@ if (typeof(tilemaps) !== 'undefined') {
                         
                         if (err) {
                             cache.controlla(percorso, config.baseurl);
-//                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
-//                               if (err) {er = true;
-//                                    return callback(err, buffer);} 
-//                                else {
+                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
+                               if (err) {er = true;
+                                    return callback(err, buffer);} 
+                                else {
 //                    fs.mkdir(path.resolve(config.baseurl + percorso.slice(0, -1).join('/')), function (err){
 //                 if (err) {console.log('errore: ' + err)}
 //                 });
@@ -89,7 +89,6 @@ if (typeof(tilemaps) !== 'undefined') {
                                                 return callback (er, err.message);
                                             } else {
                                                 er = false;
-                                                console.log(root);
                                                 fs.writeFile(root, buffer, function(err){
                                                     if (err){console.log(err);}
                                                     });
@@ -100,8 +99,8 @@ if (typeof(tilemaps) !== 'undefined') {
                                 });
                             }
                             });
-//                        }
-//                        });
+                        }
+                        });
                         } else {
                             er = false;
                             buf = buffer;
