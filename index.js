@@ -3,8 +3,11 @@ var config = require('./config.json');
 var host = config.host;
 var port = config.port;
 var http = require('http'), fs = require('fs');
+var child = require('child_process');
+var seed;
+var seedProc = [];
 var server = http.createServer(function (request, response) {
-        var seed = require('child_process').fork('./seeding.js');
+        
 	
         
         var url_prova = require('url').parse(request.url, true);
@@ -43,7 +46,11 @@ var server = http.createServer(function (request, response) {
             }
         else if (urlArray.length == 2){
             if (url_prova.pathname !== url_prova.path){
-                response.setHeader("Content-Type", "text/plain")
+                
+                if (url_prova.query.op== 'seed'){
+                    seed = child.fork('./seeding.js');
+                    seedProc.push(seed);
+                    response.setHeader("Content-Type", "text/plain");
                 console.log(url_prova.query);
             seed.send({"url" : url_prova, "config" : config, urlA : urlArray});
             console.log('seeding in corso');
@@ -51,6 +58,20 @@ var server = http.createServer(function (request, response) {
             response.writeHead(200, {
                     'Content-Length': body.length});
                     response.end(body);
+                    } else if (url_prova.query.op== 'int'){
+                      var cseed = seedProc[0];  
+                      cseed.send({"url" : url_prova, "config" : config, urlA : urlArray});
+                      response.setHeader("Content-Type", "text/plain");
+                        cseed.on('message', function(m) {
+            body = 'File totali: '+ m.tot + ' - file in elaborazione: ' + m.incorso + ' - file in coda: ' + m.incoda + ' - file elaborati:' + ((m.tot - m.incorso) - m.incoda);
+            console.log(body);
+            });    
+            response.writeHead(200, {
+                    'Content-Length': body.length});
+                    response.end(body);
+                        
+                        }
+                
         } else {
             response.setHeader("Content-Type", "text/xml");
             //not_found = wxml.tilemap(response, body, config, urlArray);
@@ -107,12 +128,9 @@ var server = http.createServer(function (request, response) {
             response.statusCode = 404;
             response.setHeader('Content-Type', 'text/plain');
             response.end('Not Found');}	
+        
+        
             
-            var count=0;
-            seed.on('message', function(m) {
-                count++;
-            console.log('Elaborato il file :'+ count + ' di ' + m.tot + 'alle ' + m.ora);
-            });
 });
 server.listen(port, host);
 console.log("server listening at " + host + " on port " + port);

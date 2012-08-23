@@ -5,8 +5,13 @@
     var config;
     var coda =[];
     var totale = 0;
+    var incoda = 0;
 
 process.on('message', function(q) {
+    
+    var op = q.url.query.op;
+    if (op == 'seed')
+    {
     var url_prova = q.url;
     var urlArray = q.urlA;
     config = q.config;
@@ -39,11 +44,14 @@ process.on('message', function(q) {
             ee.emit('event', newArray, config);
             }}
         }
-        }}
+        }
+        console.log('file da elaborare= '+ totale);
+        }
+}
+else if (op == 'int'){
+    process.send({tot : totale, incorso : count, incoda : incoda});
+    }
 
-    
-console.log('file da elaborare= '+ totale);
-//process.exit();
 });
 
     ee.on('event', function (urlA){
@@ -56,15 +64,16 @@ console.log('file da elaborare= '+ totale);
         });
     
     ee.on('done', function(){
-        
         count--;
         if (coda.length > 0){
+            incoda--;
             ee.emit('event', coda.shift());
             //console.log(coda);
             }
         });
         
     ee.on('wait', function(urlA){
+        incoda++;
         coda.push(urlA);
         });
         
@@ -72,8 +81,6 @@ console.log('file da elaborare= '+ totale);
         mappe.mappaSeed(config, urlA, function(err, buffer){
                 if (err) { console.log('erorre seeding');}
                 else {
-                        var time = Date();
-                process.send({tot : totale, ora : time});
                 ee.emit('done');
                 }
 
