@@ -12,7 +12,7 @@ var tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
 if (typeof(tilemaps) !== 'undefined') {
                 if ((urlArray[2] >= 0) && (urlArray[2] < (tilemaps.tilesets.length))){
                     er = false;
-
+                    var cache = require('./cache.js');
                     var res = tilemaps.tilesets[urlArray[2]];
                     var xdim = tilemaps.TileFormat[0];
                     var ydim = tilemaps.TileFormat[1];
@@ -23,8 +23,14 @@ if (typeof(tilemaps) !== 'undefined') {
                     var miny = (res * ydim * urlArray[4]) + yorig;
                     var maxy = (res * ydim * (parseInt(urlArray[4]) + 1)) + yorig;
                     var bbox = [minx, miny, maxx, maxy];
-                    var numlevelx = Math.ceil((tilemaps.boundingbox[2] - tilemaps.boundingbox[0])/(xdim*res));
-                    var numlevely = Math.ceil((tilemaps.boundingbox[3] - tilemaps.boundingbox[1])/(ydim*res));
+                    var numlevelx = cache.xlevels(tilemaps, urlArray[2]);
+                    var numlevely = cache.ylevels(tilemaps, urlArray[2]);
+                    console.log(numlevelx);
+                    console.log(numlevely);
+                    var ynew = cache.yinvert(urlArray[4], numlevely);
+                    console.log(ynew);
+                    var dirStruct = cache.dirStruct(urlArray[2], urlArray[3], ynew);
+                    console.log(dirStruct);
                     if (urlArray[3] > (numlevelx -1) || urlArray[4] > (numlevely - 1)){
                         var body = 'Index out of bounds: Max x level = ' + (numlevelx - 1) + ' - Max y level = ' + (numlevely - 1);
                         er = true;
@@ -32,7 +38,7 @@ if (typeof(tilemaps) !== 'undefined') {
                         }
                     
                     //controllo l'esistenza del file
-                    var cache = require('./cache.js');
+                    
                     
                     var percorso = cache.coordConvert(config.cache_dir, tilemaps.cache, urlArray[2], urlArray[3], urlArray[4], numlevely, tilemaps.TileFormat[3]);
                     var root = config.baseurl + percorso.join('/');
@@ -48,6 +54,8 @@ if (typeof(tilemaps) !== 'undefined') {
                     var fs = require('fs');
                     var buffer;
                     var mkdir = require('./mkdir.js');
+                    if (!fs.existsSync(root)){
+
                     fs.readFile(root, function (err, buffer){
                         
                         if (err) {
@@ -99,10 +107,16 @@ if (typeof(tilemaps) !== 'undefined') {
                             return callback (er, buffer);
                         }
                     });    
-                }
+                    } else {
+                    //buffer = fs.readFileSync(root);
+                            er = false;
+                            buf = buffer;
+                            return callback (er, buffer);                
+                            }
             }
         }
-}
+}}
+
 
 exports.mappaSync = function (config, urlArray){
 var fs = require('fs'), cache = require('./cache');
@@ -153,14 +167,11 @@ if (typeof(tilemaps) !== 'undefined') {
                     fs.readFile(root, function (err, buffer){
                         
                         if (err) {
-                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
-                               if (err) {er = true;
-                                    return callback(err, buffer);} 
-                                
-                                
-                                
-                                
-                                else {
+                            cache.controlla (percorso, config.baseurl);
+//                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
+//                               if (err) {er = true;
+//                                    return callback(err, buffer);}           
+//                                else {
                             var mapnik = require('mapnik');
                             var map = new mapnik.Map(xdim, ydim, config.srs[tilemaps.SRS]);
                             map.loadSync(stylesheet);
@@ -178,10 +189,10 @@ if (typeof(tilemaps) !== 'undefined') {
                                                 return (er);
                                             
                                      
-                                    }
+//                                    }
                               
                             
-                           });
+//                           });
                         
                         } else {
                             er = false;
