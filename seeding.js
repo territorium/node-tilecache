@@ -1,8 +1,15 @@
+    var count = 0;
+    var EventEmitter = require('events').EventEmitter;
+    var ee = new EventEmitter();
+    var mappe = require('./mappe.js');
+    var config;
+    var coda =[];
+    var totale = 0;
+
 process.on('message', function(q) {
     var url_prova = q.url;
     var urlArray = q.urlA;
-    var config = q.config;
-    var totale = 0;
+    config = q.config;
     var bbox = url_prova.query.bbox.split('/');
     var zfrom = url_prova.query.from;
     var zto = url_prova.query.to;
@@ -27,21 +34,48 @@ process.on('message', function(q) {
                 for (x = xini; x <= xfin; x++){
                     for (y = yini; y <= yfin; y++){ 
                           totale++; 
-            var mappe = require('./mappe.js');
             //console.log(y);
             var newArray = [urlArray[0], urlArray[1], l, x, y];
-            mappe.mappa(config, newArray, function(err, buffer){
-                if (err) { console.log('erorre seeding');}
-                else {
-                        var time = Date();
-                process.send({tot : totale, ora : time});
-                
-                }
-
-            });}}
+            ee.emit('event', newArray, config);
+            }}
         }
         }}
+
     
 console.log('file da elaborare= '+ totale);
 //process.exit();
 });
+
+    ee.on('event', function (urlA){
+            if (count<200) {
+            count++;
+            ee.emit('go', urlA);
+            } else {
+            ee.emit('wait', urlA);
+            }
+        });
+    
+    ee.on('done', function(){
+        
+        count--;
+        if (coda.length > 0){
+            ee.emit('event', coda.shift());
+            //console.log(coda);
+            }
+        });
+        
+    ee.on('wait', function(urlA){
+        coda.push(urlA);
+        });
+        
+    ee.on('go', function (urlA){
+        mappe.mappaSeed(config, urlA, function(err, buffer){
+                if (err) { console.log('erorre seeding');}
+                else {
+                        var time = Date();
+                process.send({tot : totale, ora : time});
+                ee.emit('done');
+                }
+
+            });
+        });

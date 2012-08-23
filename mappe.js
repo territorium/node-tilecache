@@ -33,7 +33,7 @@ if (typeof(tilemaps) !== 'undefined') {
                     
                     //controllo l'esistenza del file
                     var cache = require('./cache.js');
-                    
+                    var path = require('path');
                     var percorso = cache.coordConvert(config.cache_dir, tilemaps.cache, urlArray[2], urlArray[3], urlArray[4], numlevely, tilemaps.TileFormat[3]);
                     var root = config.baseurl + percorso.join('/');
                     //fine controllo
@@ -56,6 +56,11 @@ if (typeof(tilemaps) !== 'undefined') {
 //                               if (err) {er = true;
 //                                    return callback(err, buffer);} 
 //                                else {
+//                    fs.mkdir(path.resolve(config.baseurl + percorso.slice(0, -1).join('/')), function (err){
+//                 if (err) {console.log('errore: ' + err)}
+//                 });
+                 
+                 
                             var mapnik = require('mapnik');
                             var map = new mapnik.Map(xdim, ydim, config.srs[tilemaps.SRS]);
                             map.load(stylesheet, function(err,map) {
@@ -70,8 +75,8 @@ if (typeof(tilemaps) !== 'undefined') {
                                 var im = new mapnik.Image(xdim, ydim);
                                 var path = require('path');
                                 //map.renderFileSync(path.resolve(root), option);
-                                map.renderFile(path.resolve(root), option, function(err, buffer){
-                                    if (err) {console.log(err);}});
+                                //map.renderFile(path.resolve(root), option, function(err, buffer){
+                                 //   if (err) {console.log(err);}});
                                 //console.log('creo il file ' + path.resolve(root));
                                 map.render(im, function(err,im) {
                                     if (err) {
@@ -84,6 +89,10 @@ if (typeof(tilemaps) !== 'undefined') {
                                                 return callback (er, err.message);
                                             } else {
                                                 er = false;
+                                                console.log(root);
+                                                fs.writeFile(root, buffer, function(err){
+                                                    if (err){console.log(err);}
+                                                    });
                                                 return callback (er, buffer);
                                             }
                                         });
@@ -104,10 +113,14 @@ if (typeof(tilemaps) !== 'undefined') {
         }
 }
 
-exports.mappaSync = function (config, urlArray){
+exports.mappaSeed = function (config, urlArray){
+var callback = arguments[arguments.length - 1];
+//if (typeof(callback) !== 'function') callback = function(){};
 var fs = require('fs'), cache = require('./cache');
 var er = true;
-
+//var EventEmitter = require('events').EventEmitter;
+//var ee = new EventEmitter();
+//ee.addListener('event', process);
 var service = config.services[urlArray[0]];
 if (typeof(service) !== 'undefined'){
 var tilemaps = config.services[urlArray[0]].tilemaps[urlArray[1]];
@@ -135,7 +148,7 @@ if (typeof(tilemaps) !== 'undefined') {
                     
                     //controllo l'esistenza del file
                     var cache = require('./cache.js');
-                    
+                    var path = require('path');
                     var percorso = cache.coordConvert(config.cache_dir, tilemaps.cache, urlArray[2], urlArray[3], urlArray[4], numlevely, tilemaps.TileFormat[3]);
                     var root = config.baseurl + percorso.join('/');
                     //fine controllo
@@ -150,41 +163,64 @@ if (typeof(tilemaps) !== 'undefined') {
                     var fs = require('fs');
                     var buffer;
                     var mkdir = require('./mkdir.js');
-                    fs.readFile(root, function (err, buffer){
+                    fs.exists(root, function (exists) {
+//                    fs.readFile(root, function (err, buffer){
                         
-                        if (err) {
-                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
-                               if (err) {er = true;
-                                    return callback(err, buffer);} 
-                                
-                                
-                                
-                                
-                                else {
+                        if (!exists) {
+                            cache.controlla(percorso, config.baseurl);
+//                            mkdir.makedir(config.baseurl + percorso.slice(0, -1).join('/'), function(err){
+//                               if (err) {er = true;
+//                                    return callback(err, buffer);} 
+//                                else {
+//                    fs.mkdir(path.resolve(config.baseurl + percorso.slice(0, -1).join('/')), function (err){
+//                 if (err) {console.log('errore: ' + err)}
+//                 });
+                 
+                 
                             var mapnik = require('mapnik');
                             var map = new mapnik.Map(xdim, ydim, config.srs[tilemaps.SRS]);
-                            map.loadSync(stylesheet);
+                            map.load(stylesheet, function(err,map) {
+                                if (err) {
+                                    er = true;
+                                    return callback (er, err.message);
+                                } else {
                                 map.maximumExtent = tilemaps.boundingbox;
                                 map.extent = tilemaps.boundingbox;
                                 map.srs = config.srs[tilemaps.SRS];
                                 map.zoomToBox(bbox);    
                                 var im = new mapnik.Image(xdim, ydim);
                                 var path = require('path');
-                                map.renderFileSync(path.resolve(root), option);
+                                //map.renderFileSync(path.resolve(root), option);
+                                //map.renderFile(path.resolve(root), option, function(err, buffer){
+                                 //   if (err) {console.log(err);}});
                                 //console.log('creo il file ' + path.resolve(root));
-                                map.renderSync('png'); 
-                                        im.encodeSync(option.format);
+                                map.render(im, function(err,im) {
+                                    if (err) {
+                                        er = true;
+                                        return callback (er, err.message);
+                                    } else {
+                                        im.encode(option.format, function(err,buffer) {
+                                            if (err) {
+                                                er = true;
+                                                return callback (er, err.message);
+                                            } else {
                                                 er = false;
-                                                return (er);
-                                            
-                                     
+                                                fs.writeFile(root, buffer, function(err){
+                                                    if (err){console.log('errore is: ' + err);}
+                                                    });
+                                                return callback (er, buffer);
+                                            }
+                                        });
                                     }
-                              
-                            
-                           });
-                        
+                                });
+                            }
+                            });
+//                        }
+//                        });
                         } else {
                             er = false;
+                            buf = buffer;
+                            return callback (er, buffer);
                         }
                     });    
                 }

@@ -29,10 +29,9 @@ exports.controlla = function (file, root){
     }
     
  function esiste (file, root){
-    console.log('controllo');
     var fs = require('fs'), path= require('path');
      if (file.length == 1){
-         return fs.existsSync(path.resolve(root, file[0]));
+         return true;
          }
     else {
      var x = file.shift();
@@ -49,3 +48,24 @@ return esiste(file, path.resolve(root, x));
      
      
      }
+     
+function esisteDir (file, root){
+    var fs = require('fs'), path= require('path');
+    
+     if (file.length == 1){
+         return true;
+         }
+    else {
+     var x = file.shift();
+     var temp = path.resolve(root, x);
+     fs.exists(path.resolve(root, x), function (exists) {
+         if (!exists) {
+             fs.mkdirSync(path.resolve(root, x));
+             }
+  });
+return esiste(file, path.resolve(root, x));
+}
+     
+     
+     }
+
