@@ -69,24 +69,3 @@ exports.dirStruct = function (leveldir, xdir, ydir){
     return [leveldir, x1, x2, x3, y1, y2, y3];
     }    
 
-//exports.controlla = function (file, root){
-//   return esiste(file, root);
-//    }
-    
-// function esiste (file, root){
-//    var fs = require('fs'), path= require('path');
-//     if (file.length == 1){
-//         return fs.existsSync(path.resolve(root, file[0]));
-//         }
-//    else {
-//     var x = file.shift();
-//     var temp = path.resolve(root, x);
-//     if (!(fs.exists(path.resolve(root, x)))) {
-//             fs.mkdirSync(path.resolve(root, x));
-//             }
-
-//return esiste(file, path.resolve(root, x));
-//}
-     
-     
-     }

@@ -79,6 +79,7 @@ else if (op == 'int'){
             //console.log(coda);
             }
         else if (coda.length == 0 && count == 0){
+            console.log('exit seeding');
             process.exit();
           }
         });
