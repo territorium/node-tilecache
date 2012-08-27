@@ -108,7 +108,9 @@ exports.mappa = function (config, urlArray, seeding){
                                 buf = buffer;
                                 return callback (er, buffer);
                             });
-                        }
+                        } else {
+                            er = false;
+                            return callback (er, buffer);}
                     }
                 });    
             }

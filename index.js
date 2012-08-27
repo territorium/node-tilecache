@@ -75,35 +75,44 @@ var server = http.createServer(function (request, response) {
     
     seed.on('exit', function (code, signal){
         console.log('process exit with code and signal ' + code + ' ' + signal);
-        seedProc.splice(seed.pid, 1);
+        for (index in seedProc) {
+            if (seedProc[index].pid == seed.pid){
+                seedProc.splice(index, 1);
+            }
+        }
     });
 
     function seedInt(url){
 //        var callback = arguments[arguments.length - 1];
-        var i = 0, j = 0;
-        if (url.search == '?op=int'){
-            var body = 'Processi in esecuzione:\n';
-            for (index in seedProc){
-//                j++;
-                seedProc[index].send({"url" : url});
-                console.log(url);
-                seedProc[index].on('message', function(m) {
-                    i++;
-                    body += 'Pid: ' + this.pid +'\n';
-                    body += 'Service: ' + m.service +'\n';
-                    body += 'Tilemaps: ' + m.tilemaps + '\n';
-                    body += 'Boundingbox: ' + m.boundingbox + '\n';
-                    body += 'From level: ' + m.from + '\n';
-                    body += 'To level: ' + m.to + '\n';
-                    body += 'Info: File totali: '+ m.tot + ' - file in elaborazione: ' + m.incorso + ' - file in coda: ' + m.incoda + ' - file elaborati:' + ((m.tot - m.incorso) - m.incoda) + '\n';
-                    console.log(body);     
-                    if (i == seedProc.length){
-                        writeRes(200, 'text', body, format);
-//                        return callback(body);
-                        }
-                });
+        if (seedProc.length>0){
+            var i = 0, j = 0;
+            if (url.search == '?op=int'){
+                var body = 'Processi in esecuzione:\n';
+                for (index in seedProc){
+    //                j++;
+                    seedProc[index].send({"url" : url});
+                    console.log(url);
+                    seedProc[index].on('message', function(m) {
+                        i++;
+                        body += 'Pid: ' + this.pid +'\n';
+                        body += 'Service: ' + m.service +'\n';
+                        body += 'Tilemaps: ' + m.tilemaps + '\n';
+                        body += 'Boundingbox: ' + m.boundingbox + '\n';
+                        body += 'From level: ' + m.from + '\n';
+                        body += 'To level: ' + m.to + '\n';
+                        body += 'Info: File totali: '+ m.tot + ' - file in elaborazione: ' + m.incorso + ' - file in coda: ' + m.incoda + ' - file elaborati:' + ((m.tot - m.incorso) - m.incoda) + '\n';
+                        console.log(body);     
+                        if (i == seedProc.length){
+                            writeRes(200, 'text', body, format);
+    //                        return callback(body);
+                            }
+                    });
+                }
             }
-        }
+        } else {
+            body = 'There is no seeding process currently running';
+            writeRes(200, 'text', body, format);
+            }
     }
     
     function writeRes(status, type, body, format){
