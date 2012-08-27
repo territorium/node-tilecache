@@ -9,10 +9,11 @@ var spawn = require('child_process').spawn,
 
 mkdir.stderr.on('data', function (data) {
   console.log('stderr: ' + data);
+  return (true, data);
 });
 
 mkdir.on('exit', function (code) {
-  return callback(code);
+  return callback(false, code);
 });
 
 }
