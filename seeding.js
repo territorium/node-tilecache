@@ -89,7 +89,7 @@ else if (op == 'int'){
         });
         
     ee.on('go', function (urlA){
-        mappe.mappaSeed(config, urlA, function(err, buffer){
+        mappe.mappa(config, urlA, function(err, buffer){
                 if (err) { console.log('erorre seeding');}
                 else {
                 ee.emit('done');
