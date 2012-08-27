@@ -57,7 +57,7 @@ process.on('message', function(q) {
         }
 }
 else if (op == 'int'){
-    process.send({service : service, tilemaps : tilemaps, boundingbox : boundingbox, from : from, tu : to, tot : totale, incorso : count, incoda : incoda});
+    process.send({service : service, tilemaps : tilemaps, boundingbox : boundingbox, from : from, to : to, tot : totale, incorso : count, incoda : incoda});
         }
 
 });
