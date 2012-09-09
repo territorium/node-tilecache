@@ -1,6 +1,6 @@
 {
 	"port" : 8888,
-	"base" : "/services",
+	"path" : "/services",
 	"proj" : {
 		"EPSG:4326" : "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
 		"EPSG:3857" : "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
@@ -11,20 +11,22 @@
 			"srs" : "EPSG:3857",
 			"bbox" : [ -20037508.34, -20037508.34, 20037508.34, 20037508.34 ],
 			"origin" : [ -20037508.34, -20037508.34 ],
-			"res" : [ 78271.5170, 39135.7585, 19567.8792, 9783.9396, 4891.9698,
-					2445.9849, 1222.9925, 611.4962, 305.7481, 152.8741, 76.4370, 38.2185,
-					19.1093, 9.5546, 4.7773, 2.3887, 1.1943, 0.5972, 0.2986, 0.1493,
-					0.0746, 0.0373, 0.0187 ],
-			"res_min" : 78271.516953125,
-			"res_factor" : 2,
-			"res_level" : 23
+			"resolution" : {
+				"factor" : 2,
+				"levels" : 23,
+				"min" : 78271.516953125,
+				"values" : [ 78271.5170, 39135.7585, 19567.8792, 9783.9396, 4891.9698,
+						2445.9849, 1222.9925, 611.4962, 305.7481, 152.8741, 76.4370,
+						38.2185, 19.1093, 9.5546, 4.7773, 2.3887, 1.1943, 0.5972, 0.2986,
+						0.1493, 0.0746, 0.0373, 0.0187 ]
+			}
 		}
 	},
 	"services" : {
 		"countries" : {
 			"title" : "The world countries",
 			"abstract" : "Tile cache of the world countries",
-			"type" : [ "tms", "wms" ],
+			"type" : [ "tms" ],
 			"keywords" : [ "countries", "tilecache" ],
 			"contact" : {
 				"ContactPersonPrimary" : {
@@ -48,7 +50,8 @@
 			"caches" : {
 				"default" : {
 					"title" : "The world countries!",
-					"grids" : [ "GLOBAL_GEODETIC", "GLOBAL_MERCATOR", "global" ],
+					"abstract" : "Tile cache of the world countries",
+					"grids" : [ "global-geodetic", "global-mercator", "global" ],
 					"format" : [ "png", "jpeg" ],
 					"layers" : [ "world" ]
 				}
