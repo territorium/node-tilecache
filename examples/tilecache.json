@@ -47,6 +47,7 @@
 				"ContactElectronicMailAddress" : ""
 			},
 			"source" : "countries.xml",
+			"margin" : [ 200, 50 ],
 			"caches" : {
 				"default" : {
 					"title" : "The world countries!",
