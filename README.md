@@ -32,3 +32,8 @@ Download the data from the [Natural Earth Data site](http://www.naturalearthdata
 
 </Map>
 ```
+
+Start the TMS service using typing:
+```js
+node lib/tilecache.js example/tilecache.json
+```
