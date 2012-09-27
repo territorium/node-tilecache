@@ -27,7 +27,7 @@
 		"countries" : {
 			"title" : "The world countries",
 			"abstract" : "Tile cache of the world countries",
-			"type" : [ "tms" ],
+			"type" : [ "tms", "seed" ],
 			"keywords" : [ "countries", "tilecache" ],
 			"contact" : {
 				"ContactPersonPrimary" : {
@@ -48,7 +48,7 @@
 				"ContactElectronicMailAddress" : ""
 			},
 			"source" : "countries.xml",
-			"margin" : [ 200, 50 ],
+			"margin" : [ 100, 30 ],
 			"caches" : {
 				"default" : {
 					"title" : "The world countries!",
