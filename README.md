@@ -33,7 +33,21 @@ Download the data from the [Natural Earth Data site](http://www.naturalearthdata
 </Map>
 ```
 
-Start the TMS service using typing:
+Start the TMS & seeding service typing:
 ```js
 node lib/tilecache.js example/tilecache.json
+```
+
+The implementation provides different RESTful webservices:
+```js
+GET     http://[HOST]/services                  List the available TMS services
+GET     http://[HOST]/services/seed/        	List of all cache definitions
+GET     http://[HOST]/services/seed/task/       List of current seeding tasks
+POST    http://[HOST]/services/seed/task/       Add a new seeding task
+DELETE  http://[HOST]/services/seed/task/[ID]   Remove a seeding task by id
+```
+
+You can add a new seeding task using the curl and providing a JSON request; The parameters service, cache & global are mandatory. Optional parameters are format, from, to  & bbox:
+```js
+curl -i -X POST http://localhost:8888/services/seed/task/ --data '{"service":"countries", "cache" : "default", "grid": "global"}'
 ```
