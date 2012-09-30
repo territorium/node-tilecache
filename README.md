@@ -47,7 +47,7 @@ POST    http://[HOST]/services/seed/task/       Add a new seeding task
 DELETE  http://[HOST]/services/seed/task/[ID]   Remove a seeding task by id
 ```
 
-You can add a new seeding task using the curl and providing a JSON request; The parameters service, cache & global are mandatory. Optional parameters are format, from, to  & bbox:
+You can add a new seeding task using the curl and providing a JSON request; The parameters service, cache & global are mandatory. Optional parameters are format, from, to, bbox, reseed:
 ```js
 curl -i -X POST http://localhost:8888/services/seed/task/ --data '{"service":"countries", "cache" : "default", "grid": "global"}'
 ```
